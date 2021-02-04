@@ -8,7 +8,8 @@ import time
 import tensorflow as tf
 import tensorflow.keras.models as models
 import tensorflow.keras.layers as layers
-import tensorflow.keras.datasets
+import tensorflow.keras.datasets as datasets
+import tensorflow.keras.optimizers as optimizers
 import sklearn.preprocessing as preprocessing
 import matplotlib.pyplot as plt
 import numpy as np
