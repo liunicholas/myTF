@@ -10,6 +10,7 @@ import tensorflow.keras.models as models
 import tensorflow.keras.layers as layers
 import tensorflow.keras.datasets as datasets
 import tensorflow.keras.optimizers as optimizers
+import tensorflow.keras.losses as losses
 import sklearn.preprocessing as preprocessing
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,7 +52,7 @@ class Net():
         # For Conv2D, you give it: Outgoing Layers, Frame size.  Everything else needs a keyword.
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
-        self.model.add(layers.Conv2D(6, 5, input_shape = input_shape[1:], activation = 'relu'))
+        self.model.add(layers.Conv2D(6, 5, input_shape = input_shape, activation = 'relu'))
         # In our example, output from first Conv2D is 28 x 28 x 6.
         # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
         self.model.add(layers.MaxPooling2D(pool_size = 2))
@@ -69,7 +70,8 @@ class Net():
         self.model.add(layers.Dense(10))
         # Now we're at length 10, which is our number of classes.
         self.optimizer = optimizers.SGD(lr=0.001, momentum=0.9)
-        self.model.compile(loss="categorical_crossentropy", optimizer=self.optimizer, metrics=['accuracy'])
+        self.loss = losses.MeanSquaredError()
+        self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=['accuracy'])
 
     def __str__(self):
         self.model.summary(print_fn = self.print_summary)
@@ -90,11 +92,20 @@ testX = testX.astype("float") / 255.0
 
 # Convert labels from integers to vectors.
 lb = preprocessing.LabelBinarizer()
-# I'm not sure why train/test are different here.
 trainY = lb.fit_transform(trainY)
-testY = lb.transform(testY)
+testY = lb.fit_transform(testY)
 
 classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
-net = Net((BATCH_SIZE_TRAIN, 32, 32, 3))
+net = Net((32, 32, 3))
+# Notice that this will print both to console and to file.
 print(net)
+
+results = net.model.fit(trainX, trainY, validation_data=(testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
+
+plt.figure()
+plt.plot(np.arange(0, 20), results.history['loss'])
+plt.plot(np.arange(0, 20), results.history['val_loss'])
+plt.plot(np.arange(0, 20), results.history['accuracy'])
+plt.plot(np.arange(0, 20), results.history['val_accuracy'])
+plt.show()
