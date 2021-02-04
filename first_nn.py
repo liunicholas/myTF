@@ -68,10 +68,16 @@ class Net():
         # Now we're at length 84.
         self.model.add(layers.Dense(10))
         # Now we're at length 10, which is our number of classes.
+        self.optimizer = optimizers.SGD(lr=0.001, momentum=0.9)
+        self.model.compile(loss="categorical_crossentropy", optimizer=self.optimizer, metrics=['accuracy'])
 
     def __str__(self):
-        self.model.summary()
+        self.model.summary(print_fn = self.print_summary)
         return ""
+
+    def print_summary(self, summaryStr):
+        print(summaryStr)
+        print(summaryStr, file=fout)
 
 print("[INFO] Loading Traning and Test Datasets.")
 print("[INFO] Loading Traning and Test Datasets.", file=fout)
@@ -92,6 +98,3 @@ classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 net = Net((BATCH_SIZE_TRAIN, 32, 32, 3))
 print(net)
-print(net, file = fout, flush = True)
-
-optimizer = optimizers.SGD(lr=0.001, momentum = 0.9)
