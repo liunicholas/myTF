@@ -68,3 +68,30 @@ class Net():
         # Now we're at length 84.
         self.model.add(layers.Dense(10))
         # Now we're at length 10, which is our number of classes.
+
+    def __str__(self):
+        self.model.summary()
+        return ""
+
+print("[INFO] Loading Traning and Test Datasets.")
+print("[INFO] Loading Traning and Test Datasets.", file=fout)
+
+# Get the CIFAR-10 Dataset.
+((trainX, trainY), (testX, testY)) = datasets.cifar10.load_data()
+# Convert from integers 0-255 to decimals 0-1.
+trainX = trainX.astype("float") / 255.0
+testX = testX.astype("float") / 255.0
+
+# Convert labels from integers to vectors.
+lb = preprocessing.LabelBinarizer()
+# I'm not sure why train/test are different here.
+trainY = lb.fit_transform(trainY)
+testY = lb.transform(testY)
+
+classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+
+net = Net((BATCH_SIZE_TRAIN, 32, 32, 3))
+print(net)
+print(net, file = fout, flush = True)
+
+optimizer = optimizers.SGD(lr=0.001, momentum = 0.9)
