@@ -5,9 +5,9 @@ import time
 # matplotlib 3.3.3
 # numpy 1.19.4
 # opencv-python 4.4.0
+import tensorflow as tf
 import tensorflow.keras.models as models
 import tensorflow.keras.layers as layers
-import tensorflow.keras.backend as K
 import tensorflow.keras.datasets
 import sklearn.preprocessing as preprocessing
 import matplotlib.pyplot as plt
@@ -29,3 +29,16 @@ SAVE_EPOCHS = False
 SAVE_LAST = False
 BATCH_SIZE_TRAIN = 4
 BATCH_SIZE_TEST = 4
+
+devices = tf.config.list_physical_devices('GPU')
+if len(devices) > 0:
+    print('[INFO] GPU is detected.')
+    print('[INFO] GPU is detected.', file = fout, flush = True)
+else:
+    print('[INFO] GPU not detected.')
+    print('[INFO] GPU not detected.', file = fout, flush = True)
+print('[INFO] Done importing packages.')
+print('[INFO] Done importing packages.', file = fout, flush = True)
+
+class Net():
+    
