@@ -24,13 +24,13 @@ print("[TIMER] Process Time:", now, file = fout, flush = True)
 # File location to save to or load from
 MODEL_SAVE_PATH = './cifar_net.pth'
 # Set to zero to use above saved model
-TRAIN_EPOCHS = 20
+TRAIN_EPOCHS = 50
 # If you want to save the model at every epoch in a subfolder set to 'True'
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
 SAVE_LAST = False
-BATCH_SIZE_TRAIN = 4
-BATCH_SIZE_TEST = 4
+BATCH_SIZE_TRAIN = 12
+BATCH_SIZE_TEST = 12
 
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
@@ -52,13 +52,17 @@ class Net():
         # For Conv2D, you give it: Outgoing Layers, Frame size.  Everything else needs a keyword.
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
-        self.model.add(layers.Conv2D(6, 5, input_shape = input_shape, activation = 'relu'))
+        self.model.add(layers.Conv2D(16, 3, input_shape = input_shape, activation = 'relu'))
         # In our example, output from first Conv2D is 28 x 28 x 6.
         # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
-        self.model.add(layers.MaxPooling2D(pool_size = 2))
+        # self.model.add(layers.MaxPooling2D(pool_size = 2))
         # In our example, we are now at 14 x 14 x 6.
-        self.model.add(layers.Conv2D(16, 5, activation = 'relu'))
+        self.model.add(layers.Conv2D(32, 3, padding="same", activation = 'relu'))
         # In our example, we are now at 10 x 10 x 16.
+        self.model.add(layers.Conv2D(64, 3, padding="same", activation = 'relu'))
+
+        self.model.add(layers.Conv2D(128, 5, strides = 3, padding="same", activation = 'relu'))
+
         self.model.add(layers.MaxPooling2D(pool_size = 2))
         # In our example, we are now at 5 x 5 x 16.
         self.model.add(layers.Flatten())
