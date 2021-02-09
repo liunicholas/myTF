@@ -67,10 +67,13 @@ class Net():
         # In our example, we are now at 5 x 5 x 16.
         self.model.add(layers.Flatten())
         # Now, we flatten to one dimension, so we go to just length 400.
+        self.model.add(layers.Dense(2400, activation = 'relu'))
+        self.model.add(layers.Dense(1200, activation = 'relu'))
+        self.model.add(layers.Dense(600, activation = 'relu'))
+        self.model.add(layers.Dense(300, activation = 'relu'))
         self.model.add(layers.Dense(120, activation = 'relu'))
-        # Now we're at length 120.
-        self.model.add(layers.Dense(84, activation = 'relu'))
-        # Now we're at length 84.
+        self.model.add(layers.Dense(60, activation = 'relu'))
+        self.model.add(layers.Dense(30, activation = 'relu'))
         self.model.add(layers.Dense(10))
         # Now we're at length 10, which is our number of classes.
         self.optimizer = optimizers.SGD(lr=0.001, momentum=0.9)
