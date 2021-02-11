@@ -53,15 +53,19 @@ class Net():
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
         self.model.add(layers.Conv2D(16, 3, input_shape = input_shape, activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
         # In our example, output from first Conv2D is 28 x 28 x 6.
         # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
         # self.model.add(layers.MaxPooling2D(pool_size = 2))
         # In our example, we are now at 14 x 14 x 6.
         self.model.add(layers.Conv2D(32, 3, padding="same", activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
         # In our example, we are now at 10 x 10 x 16.
         self.model.add(layers.Conv2D(64, 3, padding="same", activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
 
         self.model.add(layers.Conv2D(128, 5, strides = 3, padding="same", activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
 
         self.model.add(layers.MaxPooling2D(pool_size = 2))
         # In our example, we are now at 5 x 5 x 16.
