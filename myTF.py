@@ -29,8 +29,19 @@ TRAIN_EPOCHS = 50
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
 SAVE_LAST = False
-BATCH_SIZE_TRAIN = 12
-BATCH_SIZE_TEST = 12
+BATCH_SIZE_TRAIN = 16
+BATCH_SIZE_TEST = 16
+
+#complete credit to nick chen for inspiration
+def generator(batchSize, x, y):
+    index = 0
+    while index < len(x):
+        batchX, batchY = [], []
+        for i in range(batchSize):
+            batchX.append(x[index+i])
+            batchY.append(y[index+i])
+            index+=1
+        yield np.array(batchX), np.array(batchY)
 
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
@@ -112,11 +123,11 @@ net = Net((32, 32, 3))
 # Notice that this will print both to console and to file.
 print(net)
 
-results = net.model.fit(trainX, trainY, validation_data=(testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
+results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TRAIN, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
 
 plt.figure()
-plt.plot(np.arange(0, 20), results.history['loss'])
-plt.plot(np.arange(0, 20), results.history['val_loss'])
-plt.plot(np.arange(0, 20), results.history['accuracy'])
-plt.plot(np.arange(0, 20), results.history['val_accuracy'])
+plt.plot(np.arange(0, 50), results.history['loss'])
+plt.plot(np.arange(0, 50), results.history['val_loss'])
+plt.plot(np.arange(0, 50), results.history['accuracy'])
+plt.plot(np.arange(0, 50), results.history['val_accuracy'])
 plt.show()
