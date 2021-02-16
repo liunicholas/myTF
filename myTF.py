@@ -12,8 +12,6 @@ import tensorflow.keras.datasets as datasets
 import tensorflow.keras.optimizers as optimizers
 import tensorflow.keras.losses as losses
 import sklearn.preprocessing as preprocessing
-# import tensorflow.keras.preprocessing as preprocessing
-from tensorflow.keras.layers.experimental import preprocessing as preprocessing2
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -24,15 +22,15 @@ print("[TIMER] Process Time:", now)
 print("[TIMER] Process Time:", now, file = fout, flush = True)
 
 # File location to save to or load from
-MODEL_SAVE_PATH = './boston.pth'
+MODEL_SAVE_PATH = './cifar_net.pth'
 # Set to zero to use above saved model
 TRAIN_EPOCHS = 50
 # If you want to save the model at every epoch in a subfolder set to 'True'
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
 SAVE_LAST = False
-BATCH_SIZE_TRAIN = 16
-BATCH_SIZE_TEST = 16
+BATCH_SIZE_TRAIN = 12
+BATCH_SIZE_TEST = 12
 
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
@@ -54,19 +52,19 @@ class Net():
         # For Conv2D, you give it: Outgoing Layers, Frame size.  Everything else needs a keyword.
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
-        self.model.add(layers.Conv1D(16, 3, input_shape = input_shape, activation = 'relu'))
+        self.model.add(layers.Conv2D(16, 3, input_shape = input_shape, activation = 'relu'))
         self.model.add(layers.BatchNormalization(trainable=False))
         # In our example, output from first Conv2D is 28 x 28 x 6.
         # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
         # self.model.add(layers.MaxPooling2D(pool_size = 2))
         # In our example, we are now at 14 x 14 x 6.
-        self.model.add(layers.Conv1D(32, 3, padding="same", activation = 'relu'))
+        self.model.add(layers.Conv2D(32, 3, padding="same", activation = 'relu'))
         self.model.add(layers.BatchNormalization(trainable=False))
         # In our example, we are now at 10 x 10 x 16.
-        self.model.add(layers.Conv1D(64, 3, padding="same", activation = 'relu'))
+        self.model.add(layers.Conv2D(64, 3, padding="same", activation = 'relu'))
         self.model.add(layers.BatchNormalization(trainable=False))
 
-        self.model.add(layers.Conv1D(128, 5, strides = 3, padding="same", activation = 'relu'))
+        self.model.add(layers.Conv2D(128, 5, strides = 3, padding="same", activation = 'relu'))
         self.model.add(layers.BatchNormalization(trainable=False))
 
         self.model.add(layers.MaxPooling2D(pool_size = 2))
@@ -97,79 +95,28 @@ class Net():
 print("[INFO] Loading Traning and Test Datasets.")
 print("[INFO] Loading Traning and Test Datasets.", file=fout)
 
-#get the boston housing training set
-#test_split determiones how much of the data set to be test, and seed is a random number to randomize
-((trainX, trainY), (testX, testY)) = datasets.boston_housing.load_data(test_split=0.2, seed=113)
+# Get the CIFAR-10 Dataset.
+((trainX, trainY), (testX, testY)) = datasets.cifar10.load_data()
 # Convert from integers 0-255 to decimals 0-1.
-# trainX = trainX.astype("float") / 255.0
-# testX = testX.astype("float") / 255.0
-
-# np.transpose(trainX)
-# maxes = []
-# for x in trainX:
-#     maxes.append(np.amax(trainX))
-# # np.transpose(trainX)
-#
-# np.transpose(testX)
-# for x in range(12):
-#     max = np.amax(testX[x])
-#     if max > maxes[x]:
-#         maxes[x] = max
-# # np.transpose(testX)
-#
-# for x in range(12):
-#     testX[x]/maxes[x]
-#     trainX[x]/maxes[x]
-#
-# print(testX)
-# print(trainX)
-#
-# np.transpose(trainX)
-# np.transpose(testX)
-
-#normalization
-normalizer = preprocessing2.Normalization()
-normalizer.adapt(trainX)
-
-normalizer = preprocessing2.Normalization()
-normalizer.adapt(testX)
-
-# print("convert to int")
-# print(type(trainY))
-# trainY = [int(x) for x in trainY]
-# testY = [int(x) for x in testY]
-trainY = trainY.astype(int)
-testY = testY.astype(int)
-
-# d = preprocessing.KBinsDiscretizer(n_bins=50, encode='ordinal', strategy='uniform')
-# trainY.reshape(-1, 1)
-# print(trainY)
-# d.fit(trainY)
-# testY.reshape(-1, 1)
-# d.fit(testY)
+trainX = trainX.astype("float") / 255.0
+testX = testX.astype("float") / 255.0
 
 # Convert labels from integers to vectors.
+lb = preprocessing.LabelBinarizer()
+trainY = lb.fit_transform(trainY)
+testY = lb.fit_transform(testY)
 
-# lb = preprocessing.LabelBinarizer()
-# trainY = lb.fit_transform(trainY)
-# testY = lb.fit_transform(testY)
+classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
-targets = range(1,50)
-preprocessing.label_binarize(trainY, classes=targets)
-preprocessing.label_binarize(testY, classes=targets)
-
-# classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-
-# net = Net((32, 32, 3))
-net=Net((13,1,0))
+net = Net((32, 32, 3))
 # Notice that this will print both to console and to file.
 print(net)
 
 results = net.model.fit(trainX, trainY, validation_data=(testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
 
 plt.figure()
-plt.plot(np.arange(0, 50), results.history['loss'])
-plt.plot(np.arange(0, 50), results.history['val_loss'])
-plt.plot(np.arange(0, 50), results.history['accuracy'])
-plt.plot(np.arange(0, 50), results.history['val_accuracy'])
+plt.plot(np.arange(0, 20), results.history['loss'])
+plt.plot(np.arange(0, 20), results.history['val_loss'])
+plt.plot(np.arange(0, 20), results.history['accuracy'])
+plt.plot(np.arange(0, 20), results.history['val_accuracy'])
 plt.show()
