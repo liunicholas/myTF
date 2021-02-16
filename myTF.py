@@ -38,9 +38,12 @@ def generator(batchSize, x, y):
     while index < len(x):
         batchX, batchY = [], []
         for i in range(batchSize):
-            batchX.append(x[index+i])
-            batchY.append(y[index+i])
-            index+=1
+            if (index+i)<len(x):
+                batchX.append(x[index+i])
+                batchY.append(y[index+i])
+                index+=1
+            else:
+                index=0
         yield np.array(batchX), np.array(batchY)
 
 devices = tf.config.list_physical_devices('GPU')
@@ -123,7 +126,7 @@ net = Net((32, 32, 3))
 # Notice that this will print both to console and to file.
 print(net)
 
-results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TRAIN, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
+results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
 
 plt.figure()
 plt.plot(np.arange(0, 50), results.history['loss'])
