@@ -34,8 +34,6 @@ SAVE_LAST = False
 BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_TEST = 16
 
-<<<<<<< Updated upstream
-=======
 def generator(batchSize, x, y):
     index = 0
     while index < len(x):
@@ -49,7 +47,6 @@ def generator(batchSize, x, y):
                 index=0
         yield np.array(batchX), np.array(batchY)
 
->>>>>>> Stashed changes
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
     print('[INFO] GPU is detected.')
@@ -70,26 +67,6 @@ class Net():
         # For Conv2D, you give it: Outgoing Layers, Frame size.  Everything else needs a keyword.
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
-<<<<<<< Updated upstream
-        self.model.add(layers.Conv1D(16, 3, input_shape = input_shape, activation = 'relu'))
-        self.model.add(layers.BatchNormalization(trainable=False))
-        # In our example, output from first Conv2D is 28 x 28 x 6.
-        # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
-        # self.model.add(layers.MaxPooling2D(pool_size = 2))
-        # In our example, we are now at 14 x 14 x 6.
-        self.model.add(layers.Conv1D(32, 3, padding="same", activation = 'relu'))
-        self.model.add(layers.BatchNormalization(trainable=False))
-        # In our example, we are now at 10 x 10 x 16.
-        self.model.add(layers.Conv1D(64, 3, padding="same", activation = 'relu'))
-        self.model.add(layers.BatchNormalization(trainable=False))
-
-        self.model.add(layers.Conv1D(128, 5, strides = 3, padding="same", activation = 'relu'))
-        self.model.add(layers.BatchNormalization(trainable=False))
-
-        self.model.add(layers.MaxPooling2D(pool_size = 2))
-        # In our example, we are now at 5 x 5 x 16.
-        self.model.add(layers.Flatten())
-=======
         # self.model.add(layers.Conv1D(16, 3, input_shape = input_shape, activation = 'relu'))
         # self.model.add(layers.BatchNormalization(trainable=False))
         # # In our example, output from first Conv2D is 28 x 28 x 6.
@@ -108,7 +85,6 @@ class Net():
         # self.model.add(layers.MaxPooling2D(pool_size = 2))
         # # In our example, we are now at 5 x 5 x 16.
         # self.model.add(layers.Flatten())
->>>>>>> Stashed changes
         # Now, we flatten to one dimension, so we go to just length 400.
         # self.model.add(layers.Dense(2400, activation = 'relu'))
         # self.model.add(layers.Dense(1200, activation = 'relu'))
@@ -168,13 +144,6 @@ print("[INFO] Loading Traning and Test Datasets.", file=fout)
 # np.transpose(testX)
 
 #normalization
-<<<<<<< Updated upstream
-normalizer = preprocessing2.Normalization()
-normalizer.adapt(trainX)
-
-normalizer = preprocessing2.Normalization()
-normalizer.adapt(testX)
-=======
 # normalizer = preprocessing2.Normalization()
 trainX = np.transpose(trainX)
 pt = preprocessing.PowerTransformer()
@@ -199,19 +168,13 @@ trainX = np.transpose(trainX)
 for row in trainX:
     print(max(row), min(row))
 trainX = np.transpose(trainX)
->>>>>>> Stashed changes
 
 # print("convert to int")
 # print(type(trainY))
 # trainY = [int(x) for x in trainY]
 # testY = [int(x) for x in testY]
-<<<<<<< Updated upstream
-trainY = trainY.astype(int)
-testY = testY.astype(int)
-=======
 # trainY = trainY.astype(int)
 # testY = testY.astype(int)
->>>>>>> Stashed changes
 
 # d = preprocessing.KBinsDiscretizer(n_bins=50, encode='ordinal', strategy='uniform')
 # trainY.reshape(-1, 1)
@@ -225,17 +188,6 @@ testY = testY.astype(int)
 # lb = preprocessing.LabelBinarizer()
 # trainY = lb.fit_transform(trainY)
 # testY = lb.fit_transform(testY)
-<<<<<<< Updated upstream
-
-targets = range(1,50)
-preprocessing.label_binarize(trainY, classes=targets)
-preprocessing.label_binarize(testY, classes=targets)
-
-# classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-
-# net = Net((32, 32, 3))
-net=Net((13,1,0))
-=======
 
 # targets = range(1,50)
 # preprocessing.label_binarize(trainY, classes=targets)
@@ -245,12 +197,12 @@ net=Net((13,1,0))
 
 # net = Net((32, 32, 3))
 net=Net((0,13))
->>>>>>> Stashed changes
 # Notice that this will print both to console and to file.
 print(net)
 
-results = net.model.fit(trainX, trainY, validation_data=(testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1)
+results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
 
+#to do: get model and predict
 theModel = net.model.evaluate(testX, testY, batch_size=4)
 
 print(theModel)
