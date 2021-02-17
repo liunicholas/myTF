@@ -1,3 +1,7 @@
+<<<<<<< Updated upstream
 [TIMER] Process Time: 17:16:30
+=======
+[TIMER] Process Time: 09:30:27
+>>>>>>> Stashed changes
 [INFO] GPU not detected.
 [INFO] Done importing packages.
