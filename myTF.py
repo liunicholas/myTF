@@ -26,7 +26,7 @@ print("[TIMER] Process Time:", now, file = fout, flush = True)
 # File location to save to or load from
 MODEL_SAVE_PATH = './boston.pth'
 # Set to zero to use above saved model
-TRAIN_EPOCHS = 50
+TRAIN_EPOCHS = 100
 # If you want to save the model at every epoch in a subfolder set to 'True'
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
@@ -205,11 +205,34 @@ results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_
 #to do: get model and predict
 theModel = net.model.evaluate(testX, testY, batch_size=4)
 
-print(theModel)
+predictions = net.model.predict(testX).flatten()
+
+#dont use this, i need a histogram
+# fig = plt.figure("real vs preds")
+# fig.tight_layout()
+# # plt1 = fig.add_subplot(221)
+# # plt2 = fig.add_subplot(212)
+# plt2 = fig.add_subplot()
+# # plt3 = fig.add_subplot(211)
+# # plt2.title.set_text("testing values")
+# # plt3.title.set_text("all values")
+# #put testing category on x axis and house price on y axis
+# plt2.scatter(testY, predictions, c='black', marker='*', alpha=0.5)
+# # plt2.scatter(testX, preds, c='red', marker='|', alpha=0.5, label='predicted values')
+# # plt3.scatter(dataX, dataY, c='black', marker='.', alpha=0.5)
+# # pyplot.subplots_adjust(top=1.5)
+# plt2.legend(loc='lower right')
+# plt.show()
+
+plt.hist2d(testY, predictions, bins=100)
+plt.show()
+
+# print(theModel)
+# print(predictions)
 
 plt.figure()
-plt.plot(np.arange(0, 50), results.history['loss'])
-plt.plot(np.arange(0, 50), results.history['val_loss'])
-# plt.plot(np.arange(0, 50), results.history['accuracy'])
-# plt.plot(np.arange(0, 50), results.history['val_accuracy'])
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'])
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'])
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['accuracy'])
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_accuracy'])
 plt.show()
