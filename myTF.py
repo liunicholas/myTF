@@ -26,7 +26,7 @@ print("[TIMER] Process Time:", now, file = fout, flush = True)
 # File location to save to or load from
 MODEL_SAVE_PATH = './boston.pth'
 # Set to zero to use above saved model
-TRAIN_EPOCHS = 100
+TRAIN_EPOCHS = 50
 # If you want to save the model at every epoch in a subfolder set to 'True'
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
@@ -67,40 +67,45 @@ class Net():
         # For Conv2D, you give it: Outgoing Layers, Frame size.  Everything else needs a keyword.
         # Popular keyword choices: strides (default is strides=1), padding (="valid" means 0, ="same" means whatever gives same output width/height as input).  Not sure yet what to do if you want some other padding.
         # Activation function is built right into the Conv2D function as a keyword argument.
-        # self.model.add(layers.Conv1D(16, 3, input_shape = input_shape, activation = 'relu'))
-        # self.model.add(layers.BatchNormalization(trainable=False))
-        # # In our example, output from first Conv2D is 28 x 28 x 6.
-        # # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
-        # # self.model.add(layers.MaxPooling2D(pool_size = 2))
-        # # In our example, we are now at 14 x 14 x 6.
-        # self.model.add(layers.Conv1D(32, 3, padding="same", activation = 'relu'))
-        # self.model.add(layers.BatchNormalization(trainable=False))
-        # # In our example, we are now at 10 x 10 x 16.
-        # self.model.add(layers.Conv1D(64, 3, padding="same", activation = 'relu'))
-        # self.model.add(layers.BatchNormalization(trainable=False))
-        #
-        # self.model.add(layers.Conv1D(128, 5, strides = 3, padding="same", activation = 'relu'))
-        # self.model.add(layers.BatchNormalization(trainable=False))
-        #
+
+        self.model.add(layers.Conv1D(16, 3, input_shape = input_shape, activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
+
+        # For MaxPooling2D, default strides is equal to pool_size.  Batch and layers are assumed to match whatever comes in.
         # self.model.add(layers.MaxPooling2D(pool_size = 2))
-        # # In our example, we are now at 5 x 5 x 16.
-        # self.model.add(layers.Flatten())
+
+        self.model.add(layers.Conv1D(32, 3, activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
+        # # In our example, we are now at 10 x 10 x 16.
+        self.model.add(layers.Conv1D(64, 3, activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
+
+        self.model.add(layers.Conv1D(128, 3, activation = 'relu'))
+        self.model.add(layers.BatchNormalization(trainable=False))
+
+        # self.model.add(layers.MaxPooling1D(pool_size = 2))
+
+        self.model.add(layers.Flatten())
+
         # Now, we flatten to one dimension, so we go to just length 400.
-        # self.model.add(layers.Dense(2400, activation = 'relu'))
-        # self.model.add(layers.Dense(1200, activation = 'relu'))
-        # self.model.add(layers.Dense(600, activation = 'relu'))
-        # self.model.add(layers.Dense(300, activation = 'relu'))
-        # self.model.add(layers.Dense(120, activation = 'relu'))
-        self.model.add(layers.Dense(60, activation = 'relu', input_shape=input_shape))
+        self.model.add(layers.Dense(2400, activation = 'relu', input_shape = input_shape))
+        self.model.add(layers.Dense(1200, activation = 'relu'))
+        self.model.add(layers.Dense(600, activation = 'relu'))
+        self.model.add(layers.Dense(300, activation = 'relu'))
+        self.model.add(layers.Dense(120, activation = 'relu'))
+        self.model.add(layers.Dense(60, activation = 'relu'))
         self.model.add(layers.Dense(30, activation = 'relu'))
         self.model.add(layers.Dense(1))
         # Now we're at length 10, which is our number of classes.
         #lr=0.001, momentum=0.9
         self.optimizer = optimizers.Adam(lr=0.001)
         #absolute for regression, squared for classification
-        self.loss = losses.MeanAbsoluteError()
+
+        #Absolute for few outliers
+        #squared to aggresively diminish outliers
+        self.loss = losses.MeanSquaredError()
         #metrics=['accuracy']
-        self.model.compile(loss=self.loss, optimizer=self.optimizer)
+        self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=['mse'])
 
     def __str__(self):
         self.model.summary(print_fn = self.print_summary)
@@ -164,10 +169,10 @@ testX = pt.fit_transform(testX)
 testX = np.transpose(testX)
 # normalizer.adapt(testX)
 
-trainX = np.transpose(trainX)
-for row in trainX:
-    print(max(row), min(row))
-trainX = np.transpose(trainX)
+# trainX = np.transpose(trainX)
+# for row in trainX:
+#     print(max(row), min(row))
+# trainX = np.transpose(trainX)
 
 # print("convert to int")
 # print(type(trainY))
@@ -193,17 +198,22 @@ trainX = np.transpose(trainX)
 # preprocessing.label_binarize(trainY, classes=targets)
 # preprocessing.label_binarize(testY, classes=targets)
 
-# classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+#trying to use conv 1d
+#number of rows, columns/row, 1
+trainX = trainX.reshape(trainX.shape[0], trainX.shape[1], 1)
+print(trainX.shape)
+testX = testX.reshape(testX.shape[0], testX.shape[1], 1)
+print(testX.shape)
 
-# net = Net((32, 32, 3))
-net=Net((0,13))
+#this works but need to figure out why
+net=Net((13,1))
 # Notice that this will print both to console and to file.
 print(net)
 
 results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
 
-#to do: get model and predict
-theModel = net.model.evaluate(testX, testY, batch_size=4)
+#dont need the batch_size=4
+theModel = net.model.evaluate(testX, testY)
 
 predictions = net.model.predict(testX).flatten()
 
@@ -224,15 +234,33 @@ predictions = net.model.predict(testX).flatten()
 # plt2.legend(loc='lower right')
 # plt.show()
 
-plt.hist2d(testY, predictions, bins=100)
+fig = plt.figure("preds vs real", figsize=(10, 8))
+fig.tight_layout()
+plt1 = fig.add_subplot(221)
+plt1.title.set_text("histogram of preds vs real")
+plt1.hist2d(testY, predictions, bins=100)
+plt2 = fig.add_subplot(222)
+plt2.title.set_text("best fit line of preds vs real")
+plt2.scatter(testY, predictions)
+m, b = np.polyfit(testY, predictions, 1)
+plt2.plot(testY,m*testY+b)
+plt3 = fig.add_subplot(223)
+plt3.title.set_text("training and validation loss")
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green")
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red")
+plt4 = fig.add_subplot(224)
+plt4.title.set_text("training and validation mse")
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green")
+plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red")
 plt.show()
 
 # print(theModel)
 # print(predictions)
 
-plt.figure()
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'])
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'])
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['accuracy'])
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_accuracy'])
-plt.show()
+# # plt.figure()
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'])
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'])
+# plt.show()
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['mae'])
+# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mae'])
+# plt.show()
