@@ -1,0 +1,8 @@
+[TIMER] Process Time: 09:12:10
+[INFO] GPU not detected.
+[INFO] Done importing packages.
+[INFO] Loading Traning and Test Datasets.
+[INFO] Loading Traning and Test Datasets.
+(404, 13, 1)
+(102, 13, 1)
+1/4 [======>.......................] - ETA: 0s - loss: 48.6029 - mean_squared_error: 48.60294/4 [==============================] - 0s 5ms/step - loss: 64.5535 - mean_squared_error: 64.5535
