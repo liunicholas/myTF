@@ -23,21 +23,24 @@ import cv2
 # terminalOutput = open("terminalOutput.txt", "w")
 # sys.stdout = terminalOutput
 
-fout = open('test.txt', 'w')
+# fout = open('test.txt', 'w')
 now = time.strftime("%H:%M:%S", time.localtime())
 print("[TIMER] Process Time:", now)
-print("[TIMER] Process Time:", now, file = fout, flush = True)
+# print("[TIMER] Process Time:", now, flush = True)
 
 # File location to save to or load from
 MODEL_SAVE_PATH = './boston.pth'
 # Set to zero to use above saved model
-TRAIN_EPOCHS = 50
+TRAIN_EPOCHS = 10
 # If you want to save the model at every epoch in a subfolder set to 'True'
 SAVE_EPOCHS = False
 # If you just want to save the final output in current folder, set to 'True'
 SAVE_LAST = False
 BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_TEST = 16
+
+TRAIN = False
+LOAD = True
 
 def generator(batchSize, x, y):
     index = 0
@@ -55,12 +58,12 @@ def generator(batchSize, x, y):
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
     print('[INFO] GPU is detected.')
-    print('[INFO] GPU is detected.', file = fout, flush = True)
+    # print('[INFO] GPU is detected.', flush = True)
 else:
     print('[INFO] GPU not detected.')
-    print('[INFO] GPU not detected.', file = fout, flush = True)
+    # print('[INFO] GPU not detected.', flush = True)
 print('[INFO] Done importing packages.')
-print('[INFO] Done importing packages.', file = fout, flush = True)
+# print('[INFO] Done importing packages.', flush = True)
 
 class Net():
     def __init__(self, input_shape):
@@ -118,10 +121,10 @@ class Net():
 
     def print_summary(self, summaryStr):
         print(summaryStr)
-        print(summaryStr, file=fout)
+        # print(summaryStr, file=fout)
 
 print("[INFO] Loading Traning and Test Datasets.")
-print("[INFO] Loading Traning and Test Datasets.", file=fout)
+print("[INFO] Loading Traning and Test Datasets.")
 
 #get the boston housing training set
 #test_split determiones how much of the data set to be test, and seed is a random number to randomize
@@ -210,69 +213,101 @@ print(trainX.shape)
 testX = testX.reshape(testX.shape[0], testX.shape[1], 1)
 print(testX.shape)
 
-#this works but need to figure out why
-net=Net((13,1))
-# Notice that this will print both to console and to file.
-print(net)
+if TRAIN:
+    #this works but need to figure out why
+    net=Net((13,1))
+    # Notice that this will print both to console and to file.
+    print(net)
 
-results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
+    results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
 
-# tf.io.write_file("newestRun.txt", results)
+    net.model.save("./models")
 
-#dont need the batch_size=4
-theModel = net.model.evaluate(testX, testY)
+    # tf.io.write_file("newestRun.txt", results)
 
-predictions = net.model.predict(testX).flatten()
+    #dont need the batch_size=4
+    theModel = net.model.evaluate(testX, testY)
 
-#dont use this, i need a histogram
-# fig = plt.figure("real vs preds")
-# fig.tight_layout()
-# # plt1 = fig.add_subplot(221)
-# # plt2 = fig.add_subplot(212)
-# plt2 = fig.add_subplot()
-# # plt3 = fig.add_subplot(211)
-# # plt2.title.set_text("testing values")
-# # plt3.title.set_text("all values")
-# #put testing category on x axis and house price on y axis
-# plt2.scatter(testY, predictions, c='black', marker='*', alpha=0.5)
-# # plt2.scatter(testX, preds, c='red', marker='|', alpha=0.5, label='predicted values')
-# # plt3.scatter(dataX, dataY, c='black', marker='.', alpha=0.5)
-# # pyplot.subplots_adjust(top=1.5)
-# plt2.legend(loc='lower right')
-# plt.show()
+    predictions = net.model.predict(testX).flatten()
 
-fig = plt.figure("preds vs real", figsize=(10, 8))
-fig.tight_layout()
-plt1 = fig.add_subplot(221)
-plt1.title.set_text("histogram of preds vs real")
-plt1.hist2d(testY, predictions, bins=100)
-plt2 = fig.add_subplot(222)
-plt2.title.set_text("best fit line of preds vs real")
-plt2.scatter(testY, predictions)
-m, b = np.polyfit(testY, predictions, 1)
-plt2.plot(testY,m*testY+b)
-plt3 = fig.add_subplot(223)
-plt3.title.set_text("training and validation loss")
-plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green", label="real")
-plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red", label="preds")
-plt3.legend(loc='upper right')
-plt4 = fig.add_subplot(224)
-plt4.title.set_text("training and validation mse")
-plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green", label="real")
-plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red", label="preds")
-plt4.legend(loc='upper right')
-plt.savefig("newestPlot.png")
-plt.show()
+    #dont use this, i need a histogram
+    # fig = plt.figure("real vs preds")
+    # fig.tight_layout()
+    # # plt1 = fig.add_subplot(221)
+    # # plt2 = fig.add_subplot(212)
+    # plt2 = fig.add_subplot()
+    # # plt3 = fig.add_subplot(211)
+    # # plt2.title.set_text("testing values")
+    # # plt3.title.set_text("all values")
+    # #put testing category on x axis and house price on y axis
+    # plt2.scatter(testY, predictions, c='black', marker='*', alpha=0.5)
+    # # plt2.scatter(testX, preds, c='red', marker='|', alpha=0.5, label='predicted values')
+    # # plt3.scatter(dataX, dataY, c='black', marker='.', alpha=0.5)
+    # # pyplot.subplots_adjust(top=1.5)
+    # plt2.legend(loc='lower right')
+    # plt.show()
 
-# terminalOutput.close()
+    fig = plt.figure("preds vs real", figsize=(10, 8))
+    fig.tight_layout()
+    plt1 = fig.add_subplot(221)
+    plt1.title.set_text("histogram of preds vs real")
+    plt1.hist2d(testY, predictions, bins=100)
+    plt2 = fig.add_subplot(222)
+    plt2.title.set_text("best fit line of preds vs real")
+    plt2.scatter(testY, predictions)
+    m, b = np.polyfit(testY, predictions, 1)
+    plt2.plot(testY,m*testY+b)
+    plt3 = fig.add_subplot(223)
+    plt3.title.set_text("training and validation loss")
+    plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green", label="real")
+    plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red", label="preds")
+    plt3.legend(loc='upper right')
+    plt4 = fig.add_subplot(224)
+    plt4.title.set_text("training and validation mse")
+    plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green", label="real")
+    plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red", label="preds")
+    plt4.legend(loc='upper right')
+    plt.savefig("pyplots/newestPlot.png")
+    plt.show()
 
-# print(theModel)
-# print(predictions)
+    # terminalOutput.close()
 
-# # plt.figure()
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'])
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'])
-# plt.show()
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['mae'])
-# plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mae'])
-# plt.show()
+    # print(theModel)
+    # print(predictions)
+
+    # # plt.figure()
+    # plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'])
+    # plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'])
+    # plt.show()
+    # plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['mae'])
+    # plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mae'])
+    # plt.show()
+
+if LOAD:
+    oldModel = tf.keras.models.load_model("./models/")
+
+    theModel = oldModel.evaluate(testX, testY)
+    predictions = oldModel.predict(testX).flatten()
+
+    fig = plt.figure("preds vs real", figsize=(10, 4))
+    fig.tight_layout()
+    plt1 = fig.add_subplot(121)
+    plt1.title.set_text("histogram of preds vs real")
+    plt1.hist2d(testY, predictions, bins=100)
+    plt2 = fig.add_subplot(122)
+    plt2.title.set_text("best fit line of preds vs real")
+    plt2.scatter(testY, predictions)
+    m, b = np.polyfit(testY, predictions, 1)
+    plt2.plot(testY,m*testY+b)
+    # plt3 = fig.add_subplot(223)
+    # plt3.title.set_text("training and validation loss")
+    # plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green", label="real")
+    # plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red", label="preds")
+    # plt3.legend(loc='upper right')
+    # plt4 = fig.add_subplot(224)
+    # plt4.title.set_text("training and validation mse")
+    # plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green", label="real")
+    # plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red", label="preds")
+    # plt4.legend(loc='upper right')
+    plt.savefig("pyplots/newestPlot.png")
+    plt.show()
