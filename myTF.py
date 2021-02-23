@@ -18,6 +18,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
+# import sys
+#
+# terminalOutput = open("terminalOutput.txt", "w")
+# sys.stdout = terminalOutput
+
 fout = open('test.txt', 'w')
 now = time.strftime("%H:%M:%S", time.localtime())
 print("[TIMER] Process Time:", now)
@@ -212,6 +217,8 @@ print(net)
 
 results = net.model.fit(generator(BATCH_SIZE_TRAIN, trainX, trainY), validation_data=generator(BATCH_SIZE_TEST, testX, testY), shuffle = True, epochs = TRAIN_EPOCHS, batch_size = BATCH_SIZE_TRAIN, validation_batch_size = BATCH_SIZE_TEST, verbose = 1, steps_per_epoch=len(trainX)/BATCH_SIZE_TRAIN, validation_steps=len(testX)/BATCH_SIZE_TEST)
 
+# tf.io.write_file("newestRun.txt", results)
+
 #dont need the batch_size=4
 theModel = net.model.evaluate(testX, testY)
 
@@ -246,13 +253,18 @@ m, b = np.polyfit(testY, predictions, 1)
 plt2.plot(testY,m*testY+b)
 plt3 = fig.add_subplot(223)
 plt3.title.set_text("training and validation loss")
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green")
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red")
+plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['loss'], color="green", label="real")
+plt3.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_loss'], color="red", label="preds")
+plt3.legend(loc='upper right')
 plt4 = fig.add_subplot(224)
 plt4.title.set_text("training and validation mse")
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green")
-plt.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red")
+plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['mse'],color="green", label="real")
+plt4.plot(np.arange(0, TRAIN_EPOCHS), results.history['val_mse'], color="red", label="preds")
+plt4.legend(loc='upper right')
+plt.savefig("newestPlot.png")
 plt.show()
+
+# terminalOutput.close()
 
 # print(theModel)
 # print(predictions)
