@@ -17,6 +17,7 @@ from tensorflow.keras.layers.experimental import preprocessing as preprocessing2
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+from yfinance import *
 
 # import sys
 #
@@ -29,7 +30,7 @@ print("[TIMER] Process Time:", now)
 # print("[TIMER] Process Time:", now, flush = True)
 
 # File location to save to or load from
-MODEL_SAVE_PATH = './boston.pth'
+# MODEL_SAVE_PATH = './boston.pth'
 # Set to zero to use above saved model
 TRAIN_EPOCHS = 10
 # If you want to save the model at every epoch in a subfolder set to 'True'
@@ -40,7 +41,7 @@ BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_TEST = 16
 
 TRAIN = False
-LOAD = True
+LOAD = False
 
 def generator(batchSize, x, y):
     index = 0
@@ -54,6 +55,12 @@ def generator(batchSize, x, y):
             else:
                 index=0
         yield np.array(batchX), np.array(batchY)
+
+def getData(stockName):
+    stock = Ticker(stockName)
+    hist = stock.history(period="max")
+
+    print(hist)
 
 devices = tf.config.list_physical_devices('GPU')
 if len(devices) > 0:
@@ -125,6 +132,8 @@ class Net():
 
 print("[INFO] Loading Traning and Test Datasets.")
 print("[INFO] Loading Traning and Test Datasets.")
+
+getData("TSLA")
 
 #get the boston housing training set
 #test_split determiones how much of the data set to be test, and seed is a random number to randomize
