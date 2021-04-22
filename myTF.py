@@ -39,8 +39,8 @@ SAVE_LAST = False
 BATCH_SIZE_TRAIN = 16
 BATCH_SIZE_TEST = 16
 
-TRAIN = False
-LOAD = True
+TRAIN = True
+LOAD = False
 
 def generator(batchSize, x, y):
     index = 0
@@ -212,6 +212,8 @@ trainX = trainX.reshape(trainX.shape[0], trainX.shape[1], 1)
 print(trainX.shape)
 testX = testX.reshape(testX.shape[0], testX.shape[1], 1)
 print(testX.shape)
+
+print(testX)
 
 if TRAIN:
     #this works but need to figure out why
